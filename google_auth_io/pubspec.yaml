@@ -1,0 +1,38 @@
+name: tekartik_google_auth_io
+description: >-
+  Io (console/desktop, no flutter) implementation of tekartik_google_auth,
+  with a googleapis_auth loopback console login.
+version: 0.5.0
+publish_to: none
+repository: https://github.com/tekartik/google_auth.dart
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  cv: ">=1.1.11"
+  googleapis: ">=1.2.0"
+  googleapis_auth: ">=1.2.0"
+  http: ">=1.2.0"
+  tekartik_firebase_persistence:
+    git:
+      url: https://github.com/tekartik/firebase.dart
+      path: firebase_persistence
+    version: '>=0.2.0'
+  tekartik_prefs:
+    git:
+      url: https://github.com/tekartik/prefs.dart
+      path: prefs
+    version: '>=1.1.0'
+  tekartik_google_auth:
+    path: ../google_auth
+
+dev_dependencies:
+  idb_shim: ">=2.9.7-2"
+  tekartik_lints:
+    git:
+      url: https://github.com/tekartik/common.dart
+      path: packages/lints
+    version: '>=0.1.0'
+  test: ^1.25.6
+resolution: workspace

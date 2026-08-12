@@ -1,0 +1,31 @@
+name: tekartik_google_auth_flutter
+description: >-
+  Flutter implementation of tekartik_google_auth, based on
+  google_sign_in (with a web render button).
+version: 0.3.0
+publish_to: none
+repository: https://github.com/tekartik/google_auth.dart
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  extension_google_sign_in_as_googleapis_auth: ^2.0.13
+  google_identity_services_web:
+  google_sign_in: ^6.2.2
+  google_sign_in_web:
+  googleapis_auth: ">=1.2.0"
+  tekartik_google_auth:
+    path: ../google_auth
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  tekartik_lints_flutter:
+    git:
+      url: https://github.com/tekartik/common_flutter.dart
+      path: packages/lints_flutter
+    version: '>=0.1.0'
+resolution: workspace
