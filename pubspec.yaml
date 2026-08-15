@@ -6,4 +6,5 @@ workspace:
   - google_auth
   - google_auth_flutter
   - google_auth_io
+  - google_auth_test
   - repo_support

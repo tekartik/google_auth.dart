@@ -4,7 +4,12 @@ import 'package:process_run/shell.dart';
 
 Future main() async {
   if (dartVersion >= Version(2, 12, 0, pre: '0')) {
-    for (var dir in ['google_auth', 'google_auth_io', 'google_auth_flutter']) {
+    for (var dir in [
+      'google_auth',
+      'google_auth_io',
+      'google_auth_test',
+      'google_auth_flutter',
+    ]) {
       await packageRunCi(join('..', dir));
     }
   }
