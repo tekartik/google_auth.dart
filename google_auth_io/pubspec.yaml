@@ -11,8 +11,8 @@ environment:
 
 dependencies:
   cv: ">=1.1.11"
-  googleapis: ">=1.2.0"
-  googleapis_auth: ">=1.2.0"
+  googleapis: ">11.2.0"
+  googleapis_auth: ">=2.1.0"
   http: ">=1.2.0"
   tekartik_firebase_persistence:
     git:
