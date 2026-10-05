@@ -28,28 +28,24 @@ void main() {
 
   group('TekartikGoogleAuthFlutter', () {
     test('is a TekartikGoogleAuth', () {
-      var auth =
-          tekartikGoogleAuthServiceFlutter.auth(
-                TekartikGoogleAuthOptions(clientId: 'flutter_test_client'),
-              )
-              as TekartikGoogleAuthFlutter;
+      var auth = tekartikGoogleAuthServiceFlutter.auth(
+        TekartikGoogleAuthOptions(clientId: 'flutter_test_client'),
+      ) as TekartikGoogleAuthFlutter;
       expect(auth, isA<TekartikGoogleAuth>());
       expect(auth.isSignedIn, isFalse);
       expect(auth.currentUser, isNull);
     });
 
     test('scopes are forwarded to google sign in', () {
-      var auth =
-          tekartikGoogleAuthServiceFlutter.auth(
-                TekartikGoogleAuthOptions(
-                  clientId: 'flutter_test_scopes',
-                  scopes: [
-                    tekartikGoogleAuthEmailScope,
-                    tekartikGoogleAuthProfileScope,
-                  ],
-                ),
-              )
-              as TekartikGoogleAuthFlutter;
+      var auth = tekartikGoogleAuthServiceFlutter.auth(
+        TekartikGoogleAuthOptions(
+          clientId: 'flutter_test_scopes',
+          scopes: [
+            tekartikGoogleAuthEmailScope,
+            tekartikGoogleAuthProfileScope,
+          ],
+        ),
+      ) as TekartikGoogleAuthFlutter;
       expect(auth.scopes, ['email', 'profile']);
       expect(auth.googleSignIn.scopes, ['email', 'profile']);
     });
