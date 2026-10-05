@@ -12,10 +12,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  extension_google_sign_in_as_googleapis_auth: ^2.0.13
+  extension_google_sign_in_as_googleapis_auth: ^3.0.0
   google_identity_services_web:
-  google_sign_in: ^6.2.2
-  google_sign_in_web:
+  google_sign_in: ^7.2.0
+  google_sign_in_web: 1.1.3
   googleapis_auth: ">=1.2.0"
   tekartik_google_auth:
     path: ../google_auth
