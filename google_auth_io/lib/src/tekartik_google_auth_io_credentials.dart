@@ -160,7 +160,21 @@ class TekartikGoogleAuthIoCredentialsStore {
 
 /// Scopes are a set, their order is not meaningful.
 bool _sameScopes(List<String> scopes1, List<String> scopes2) {
-  var set1 = scopes1.toSet();
-  var set2 = scopes2.toSet();
+  var set1 = _grantedScopes(scopes1);
+  var set2 = _grantedScopes(scopes2);
   return set1.length == set2.length && set1.containsAll(set2);
+}
+
+/// [scopes] as Google grants (and googleapis_auth saves) them: `email` and
+/// `profile` come back as their `userinfo` url, with an extra `openid`.
+Set<String> _grantedScopes(List<String> scopes) {
+  return {
+    for (var scope in scopes)
+      if (scope != 'openid')
+        switch (scope) {
+          'email' => 'https://www.googleapis.com/auth/userinfo.email',
+          'profile' => 'https://www.googleapis.com/auth/userinfo.profile',
+          _ => scope,
+        },
+  };
 }

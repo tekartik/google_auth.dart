@@ -75,6 +75,18 @@ void main() {
       expect(tekartikGoogleAuthServiceIo.supportsSignInSilently, isTrue);
     });
 
+    test('a closed instance is not handed out again', () async {
+      var persistence = TekartikFirebasePersistenceMemory();
+      var auth = newAuth(credentialsPersistence: persistence);
+      await auth.close();
+      var newOne = newAuth(credentialsPersistence: persistence);
+      expect(newOne, isNot(same(auth)));
+      expect(await newOne.authReady, isTrue);
+      expect(await newOne.onCurrentUser.first, isNull);
+      expect(newAuth(credentialsPersistence: persistence), same(newOne));
+      await newOne.close();
+    });
+
     test('auth() reuses the instance for equal options', () {
       var auth = newAuth();
       expect(newAuth(), same(auth));
@@ -177,6 +189,30 @@ void main() {
       expect(
         auth.serviceAccountUser.email,
         'mock@mock_sa_project.iam.gserviceaccount.com',
+      );
+    });
+
+    test('a rotated key is a new instance', () {
+      Map<String, Object?> serviceAccount(String key) => <String, Object?>{
+        ...mockServiceAccountMap,
+        'private_key': key,
+      };
+      var auth = tekartikGoogleAuthServiceIo.authViaServiceAccount(
+        serviceAccount(mockPrivateKey),
+        scopes: [tekartikGoogleAuthUserInfoProfileScope],
+      );
+      var rotated = tekartikGoogleAuthServiceIo.authViaServiceAccount(
+        serviceAccount(mockPrivateKey2),
+        scopes: [tekartikGoogleAuthUserInfoProfileScope],
+      );
+      expect(rotated, isNot(same(auth)));
+      expect(rotated.serviceAccountCredentials.privateKey, mockPrivateKey2);
+      expect(
+        tekartikGoogleAuthServiceIo.authViaServiceAccount(
+          serviceAccount(mockPrivateKey2),
+          scopes: [tekartikGoogleAuthUserInfoProfileScope],
+        ),
+        same(rotated),
       );
     });
 
@@ -320,6 +356,31 @@ void main() {
       expect(map['token_expiry'], '2030-01-02T03:04:05.000Z');
       expect(map['refresh_token'], 'mock_refresh_token');
       expect(map['scopes'], scopes);
+    });
+
+    test('scopes as granted by Google are restored', () async {
+      // Google expands email/profile and adds openid, googleapis_auth saves
+      // the granted scopes.
+
+      await store.save(
+        mockAccessCredentials(
+          scopes: [
+            'https://www.googleapis.com/auth/userinfo.email',
+            'https://www.googleapis.com/auth/userinfo.profile',
+            'openid',
+          ],
+        ),
+      );
+      var credentials = await store.load([
+        tekartikGoogleAuthEmailScope,
+        tekartikGoogleAuthUserInfoProfileScope,
+      ]);
+      expect(credentials, isNotNull);
+      expect(credentials!.refreshToken, 'mock_refresh_token');
+      expect(
+        await store.load([tekartikGoogleAuthProfileScope, 'openid', 'email']),
+        isNotNull,
+      );
     });
 
     test('other scopes are not restored', () async {

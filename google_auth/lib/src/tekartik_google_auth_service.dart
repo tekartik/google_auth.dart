@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 
 import 'tekartik_google_auth.dart';
+import 'tekartik_google_auth_closed.dart';
 
 /// The options a [TekartikGoogleAuth] instance is created with.
 ///
@@ -130,12 +131,16 @@ mixin TekartikGoogleAuthServiceMixin implements TekartikGoogleAuthService {
   final _instances = <TekartikGoogleAuthOptions, TekartikGoogleAuth>{};
 
   /// Returns the cached instance for [options], calling [create] on first
-  /// access.
+  /// access, and again once the cached instance was closed.
   @protected
   TekartikGoogleAuth getInstance(
     TekartikGoogleAuthOptions options,
     TekartikGoogleAuth Function() create,
   ) {
+    var instance = _instances[options];
+    if (instance != null && tekartikGoogleAuthIsClosed(instance)) {
+      _instances.remove(options);
+    }
     return _instances.putIfAbsent(options, create);
   }
 

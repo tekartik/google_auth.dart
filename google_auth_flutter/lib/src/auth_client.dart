@@ -9,7 +9,21 @@ class GoogleAuthClientService {
   final GoogleSignIn googleSignIn;
 
   /// Cached authenticated client.
+  ///
+  /// The extension builds it with the access token of the moment, no refresh
+  /// token and a fake far expiry: it is only reused while that token is still
+  /// valid ([_clientMaxAge], the access tokens last an hour) and for the same
+  /// account, then built again from a fresh token.
   AuthClient? _authenticatedClient;
+
+  /// When [_authenticatedClient] was built.
+  DateTime? _authenticatedClientTime;
+
+  /// The account [_authenticatedClient] was built for.
+  String? _authenticatedClientAccountId;
+
+  /// Below the one hour lifetime of the access tokens.
+  static const _clientMaxAge = Duration(minutes: 45);
 
   /// Authenticated client holder, signing in on demand.
   GoogleAuthClientService({required this.googleSignIn});
@@ -17,10 +31,16 @@ class GoogleAuthClientService {
   /// Authenticated client, signing in (silently first) if needed.
   Future<AuthClient?> getClient() async {
     tekartikGoogleAuthLog('getClient called $_authenticatedClient');
-    // If we already have a client, return it immediately (Efficiency!)
-    if (_authenticatedClient != null) {
-      return _authenticatedClient;
+    // Reuse the client while its token is valid, for the same account.
+    var authenticatedClient = _authenticatedClient;
+    var authenticatedClientTime = _authenticatedClientTime;
+    if (authenticatedClient != null &&
+        authenticatedClientTime != null &&
+        DateTime.now().difference(authenticatedClientTime) < _clientMaxAge &&
+        googleSignIn.currentUser?.id == _authenticatedClientAccountId) {
+      return authenticatedClient;
     }
+    clear();
 
     // Try to get the user silently (no UI popup)
     var currentUser = googleSignIn.currentUser;
@@ -51,6 +71,8 @@ class GoogleAuthClientService {
       tekartikGoogleAuthLog('currentUser: $currentUser');
       // Use the extension to create the authenticated client
       _authenticatedClient = await googleSignIn.authenticatedClient();
+      _authenticatedClientTime = DateTime.now();
+      _authenticatedClientAccountId = currentUser.id;
       tekartikGoogleAuthLog(
         'obtained authenticated client: $_authenticatedClient',
       );
@@ -65,5 +87,7 @@ class GoogleAuthClientService {
   /// Forget the cached client.
   void clear() {
     _authenticatedClient = null;
+    _authenticatedClientTime = null;
+    _authenticatedClientAccountId = null;
   }
 }

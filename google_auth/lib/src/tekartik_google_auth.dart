@@ -5,6 +5,7 @@ import 'package:meta/meta.dart';
 import 'package:tekartik_common_utils/stream/subject.dart';
 
 import 'google_auth_user.dart';
+import 'tekartik_google_auth_closed.dart';
 import 'tekartik_google_auth_service.dart';
 
 /// Set to true to trace the auth service.
@@ -98,12 +99,18 @@ abstract class TekartikGoogleAuth {
   /// emits `null`.
   Future<void> signOut();
 
-  /// The authenticated client, `null` if not signed in.
+  /// The authenticated client, ready to be given to a `googleapis` api
+  /// object.
   ///
-  /// Ready to be given to a `googleapis` api object.
+  /// When not signed in, it signs in first: io and flutter (except on the
+  /// web) then start the interactive [signIn] if no credentials can be
+  /// restored, a service account signs in without interaction. It returns
+  /// `null` when no user could be signed in (cancelled, or the web without
+  /// a signed in user); io rethrows the sign in errors.
   Future<AuthClient?> getClient();
 
-  /// Authentication headers for raw http calls, `null` if not signed in.
+  /// Authentication headers for raw http calls, from [getClient] (so it may
+  /// sign in the same way), `null` when no user could be signed in.
   Future<Map<String, String>?> getAuthHeaders();
 
   /// Releases the resources, after this [onCurrentUser] is done.
@@ -233,6 +240,8 @@ mixin TekartikGoogleAuthMixin implements TekartikGoogleAuth {
 
   @override
   Future<void> close() async {
+    // The service then creates a new instance for the same options.
+    tekartikGoogleAuthMarkClosed(this);
     // An in flight restore would never complete it, do not leave an awaiter
     // of `authReady` hanging.
     _authReadyComplete(false);

@@ -34,9 +34,9 @@ class TekartikGoogleAuthFlutter with TekartikGoogleAuthMixin {
       ) {
     _client = GoogleAuthClientService(googleSignIn: _googleSignIn);
     _subscription = _googleSignIn.onCurrentUserChanged.listen((account) {
-      if (account == null) {
-        _client.clear();
-      }
+      // Signed out or another account (web sign in button): the cached
+      // client belongs to the previous one.
+      _client.clear();
       currentUserAdd(_toUser(account));
     });
   }

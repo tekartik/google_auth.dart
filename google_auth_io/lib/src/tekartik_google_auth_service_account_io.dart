@@ -33,15 +33,20 @@ class TekartikGoogleAuthServiceAccountOptionsIo
     if (impersonatedUser != null) 'impersonatedUser': impersonatedUser,
   };
 
+  /// The private key, a rotated key gives other options (and instance).
+  String get _privateKey => serviceAccountCredentials.privateKey;
+
   @override
-  int get hashCode => Object.hash(super.hashCode, email, impersonatedUser);
+  int get hashCode =>
+      Object.hash(super.hashCode, email, impersonatedUser, _privateKey);
 
   @override
   bool operator ==(Object other) =>
       other is TekartikGoogleAuthServiceAccountOptionsIo &&
       super == other &&
       other.email == email &&
-      other.impersonatedUser == impersonatedUser;
+      other.impersonatedUser == impersonatedUser &&
+      other._privateKey == _privateKey;
 }
 
 /// Io implementation of [TekartikGoogleAuth] authenticating as a service

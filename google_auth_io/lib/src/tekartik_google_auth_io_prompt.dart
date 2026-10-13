@@ -35,9 +35,11 @@ Future<void> tekartikGoogleAuthIoLaunchUrl(String url) async {
     executable = 'open';
     arguments = <String>[url];
   } else if (Platform.isWindows) {
-    // The empty argument is the window title `start` expects first.
-    executable = 'cmd';
-    arguments = <String>['/c', 'start', '', url];
+    // Not `cmd /c start`: cmd splits the unquoted url on its `&`s (dart only
+    // quotes an argument with a space), keeping only the first parameter.
+    // FileProtocolHandler takes the rest of the command line as the url.
+    executable = 'rundll32';
+    arguments = <String>['url.dll,FileProtocolHandler', url];
   } else {
     tekartikGoogleAuthLog(
       'no known url opener for ${Platform.operatingSystem}',

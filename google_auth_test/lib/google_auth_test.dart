@@ -38,15 +38,16 @@ void runGoogleAuthTests({
     });
 
     test('authViaServiceAccount', () {
-      if (!service.supportsServiceAccount) {
-        expect(
-          () => service.authViaServiceAccount(
-            <String, Object?>{},
-            scopes: options.scopes,
-          ),
-          throwsUnsupportedError,
-        );
-      }
+      // An empty json: unsupported, or supported and rejected as invalid.
+      expect(
+        () => service.authViaServiceAccount(
+          <String, Object?>{},
+          scopes: options.scopes,
+        ),
+        service.supportsServiceAccount
+            ? throwsA(isNot(isA<UnsupportedError>()))
+            : throwsUnsupportedError,
+      );
     });
 
     runGoogleAuthAuthTests(auth: service.auth(options));
@@ -76,24 +77,31 @@ void runGoogleAuthAuthTests({required TekartikGoogleAuth auth}) {
     });
 
     test('getClient', () async {
+      // Signed out, getClient would start the interactive sign in.
+      if (!auth.isSignedIn) {
+        // ignore: avoid_print
+        print('not signed in, getClient not called');
+        return;
+      }
       var client = await auth.getClient();
       // ignore: avoid_print
       print('client: $client');
+      expect(client, isNotNull);
       var headers = await auth.getAuthHeaders();
-      if (client == null) {
-        expect(auth.isSignedIn, isFalse);
-        expect(headers, isNull);
-      } else {
-        expect(headers!['Authorization'], startsWith('Bearer '));
-      }
+      expect(headers!['Authorization'], startsWith('Bearer '));
     });
 
     group('signInSilently', () {
       test('signInSilently', () async {
+        var wasSignedIn = auth.isSignedIn;
         var user = await auth.signInSilently();
         // ignore: avoid_print
         print('signInSilently: $user');
-        expect(user, auth.currentUser);
+        // A user means signed in, a signed in auth stays signed in.
+        expect(auth.isSignedIn, user != null || wasSignedIn);
+        if (user != null) {
+          expect(auth.currentUser, user);
+        }
       });
     }, skip: !auth.service.supportsSignInSilently);
   });
