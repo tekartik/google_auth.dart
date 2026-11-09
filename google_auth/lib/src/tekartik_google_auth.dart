@@ -150,6 +150,12 @@ mixin TekartikGoogleAuthMixin implements TekartikGoogleAuth {
 
   /// Restores the current user, once, then publishes the outcome.
   Future<void> _restoreCurrentUser() => _restoreFuture ??= () async {
+    // A closed auth must not sign in again (io would read the saved
+    // credentials and keep a client that nothing closes any more).
+    if (tekartikGoogleAuthIsClosed(this)) {
+      _authReadyComplete(false);
+      return;
+    }
     TekartikGoogleAuthUser? restored;
     try {
       restored = await restoreCurrentUser();

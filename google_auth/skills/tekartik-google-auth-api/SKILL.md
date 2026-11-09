@@ -73,8 +73,12 @@ the implementation, `tekartik_google_auth_flutter` or `tekartik_google_auth_io`.
   on services with `supportsSignInSilently == false`. `signOut()` forgets the
   saved credentials and emits `null`.
 * `getClient()` returns an `AuthClient` (an `http.Client`) ready to be given
-  to a `googleapis` api object, or `null` when signed out. The auth object
-  owns it: do not `close()` it yourself, `auth.close()` does. Use
+  to a `googleapis` api object. When not signed in it signs in first: io and
+  Flutter (except on the web) start the interactive `signIn()` if nothing can
+  be restored, a service account signs in without interaction. It returns
+  `null` when no user could be signed in (cancelled, or Flutter web without a
+  signed in user); io rethrows the sign in errors. The auth object owns the
+  client: do not `close()` it yourself, `auth.close()` does. Use
   `getAuthHeaders()` (`Authorization: Bearer ...` + `Content-Type`) only for
   raw http calls you make with your own client.
 * `service.authViaServiceAccount(serviceAccountJsonMapOrString, scopes:,
@@ -82,7 +86,9 @@ the implementation, `tekartik_google_auth_flutter` or `tekartik_google_auth_io`.
   and is only supported when `service.supportsServiceAccount` is `true` (io
   only); the others throw `UnsupportedError`. Guard it with the flag.
 * `await auth.close()` when done (end of a cli tool, disposal of the owning
-  state object): it closes `onCurrentUser` and the underlying client.
+  state object): it closes `onCurrentUser` and the underlying client. A closed
+  auth never signs in again (`authReady` resolves to `false`);
+  `service.auth(options)` then creates a new instance.
 * Set `debugTekartikGoogleAuthService = true` to trace the auth flow on the
   console.
 * Anti-patterns: importing `package:googleapis_auth` or an implementation

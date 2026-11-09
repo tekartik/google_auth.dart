@@ -44,10 +44,11 @@ give the shortest in memory fake for a unit test.
   always published, even a `null` one, so listeners can tell "signed out" from
   "not resolved yet". Call it with `null` in `signOut()`.
 * `restoreCurrentUser()` (`@protected`) runs **once**, on the first
-  `onCurrentUser` listen or `authReady` await, and defaults to
-  `signInSilently()` when `service.supportsSignInSilently` is true. Override
-  it to return `null` when the implementation keeps no saved credentials, so
-  that merely listening never triggers a network call or a consent screen.
+  `onCurrentUser` listen or `authReady` await (never after `close()`), and
+  defaults to `signInSilently()` when `service.supportsSignInSilently` is
+  true. Override it to return `null` when the implementation keeps no saved
+  credentials, so that merely listening never triggers a network call or a
+  consent screen.
   Errors thrown there are caught and logged, and a value (possibly `null`) is
   always published afterwards.
 * Override `close()` to release the backend resources (http client, sign in
