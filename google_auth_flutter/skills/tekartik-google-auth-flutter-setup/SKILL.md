@@ -28,7 +28,6 @@ on web. App code keeps talking to the common `TekartikGoogleAuth` api.
       git:
         url: https://github.com/tekartik/google_auth.dart
         path: google_auth_flutter
-      version: '>=0.3.0'
   ```
 * Import `package:tekartik_google_auth_flutter/google_auth_flutter.dart`: the
   whole common api (`TekartikGoogleAuth`, `TekartikGoogleAuthOptions`,
@@ -52,8 +51,9 @@ on web. App code keeps talking to the common `TekartikGoogleAuth` api.
   `onCurrentUserChanged`, so `currentUser`/`onCurrentUser` also follow a sign
   in made directly through `googleSignIn` or through the GSI button.
 * `signIn()` and `signInSilently()` **never throw**: a cancelled or failed
-  sign in is logged (`debugTekartikGoogleAuthService = true` to see it) and
-  returns `null`. Always null-check.
+  sign in is logged (`debugTekartikGoogleAuthService = true` to see it; the
+  log never prints a token nor the server auth code) and returns `null`.
+  Always null-check.
 * On **web**, `signIn()` is deprecated in GSI and may do nothing: render the
   button instead. `TekartikGoogleSignInRenderButton(auth: auth)` is the
   portable widget - the GSI rendered button on web, an
@@ -87,8 +87,10 @@ on web. App code keeps talking to the common `TekartikGoogleAuth` api.
   leave the auth open.
 * Tests: `flutter test` with `TestWidgetsFlutterBinding.ensureInitialized()`.
   Without a platform plugin only the wiring is testable (the service global,
-  the instance cache, `auth.googleSignIn.scopes`); use a fake
-  `TekartikGoogleAuth` (see `tekartik_google_auth`'s implementation skill) for
+  the instance cache, `auth.googleSignIn.scopes`), or set
+  `GoogleSignInPlatform.instance` to a fake (a `GoogleSignInPlatform` with
+  `isMock => true`, from `google_sign_in_platform_interface`) to drive the
+  sign in; use a fake `TekartikGoogleAuth` (see `tekartik_google_auth`'s implementation skill) for
   widget tests, and the shared suite/dev menu of `tekartik_google_auth_test`
   on a device.
 * Anti-patterns: calling `signIn()` on web instead of rendering the button;

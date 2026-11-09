@@ -44,7 +44,9 @@ class GoogleAuthClientService {
 
     // Try to get the user silently (no UI popup)
     var currentUser = googleSignIn.currentUser;
-    tekartikGoogleAuthLog('currentUser $currentUser');
+    // The account id only: the account toString holds its serverAuthCode,
+    // a code exchangeable for tokens.
+    tekartikGoogleAuthLog('currentUser ${currentUser?.id}');
     if (currentUser == null) {
       tekartikGoogleAuthLog('currentUser signInSilently');
       try {
@@ -68,7 +70,7 @@ class GoogleAuthClientService {
         await googleSignIn.requestScopes(googleSignIn.scopes);
       }
 
-      tekartikGoogleAuthLog('currentUser: $currentUser');
+      tekartikGoogleAuthLog('currentUser: ${currentUser.id}');
       // Use the extension to create the authenticated client
       _authenticatedClient = await googleSignIn.authenticatedClient();
       _authenticatedClientTime = DateTime.now();
