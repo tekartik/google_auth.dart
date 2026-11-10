@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:process_run/shell.dart';
 
 import 'package:tekartik_google_auth/google_auth_impl.dart';
 
@@ -48,7 +49,10 @@ Future<void> tekartikGoogleAuthIoLaunchUrl(String url) async {
   }
   try {
     tekartikGoogleAuthLog('launching $executable $arguments');
-    await Process.start(executable, arguments, mode: ProcessStartMode.detached);
+    // Detached: the browser outlives the program, the run ends once started.
+    await Shell(
+      options: ShellOptions(mode: ProcessStartMode.detached, verbose: false),
+    ).runExecutableArguments(executable, arguments);
   } catch (e) {
     tekartikGoogleAuthLog('error launching $url: $e');
   }
