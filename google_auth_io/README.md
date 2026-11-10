@@ -2,7 +2,12 @@
 
 Io (console/desktop, **no flutter**) implementation of
 [`tekartik_google_auth`](../google_auth), on top of the
-`googleapis_auth` loopback consent flow.
+`googleapis_auth` loopback consent flow: sign a Google account in from a
+Dart program, get an authenticated client for any `googleapis` api, keep the
+token for the next runs. Service accounts too.
+
+Dart VM only (`dart:io`: Linux, macOS, Windows). A Flutter mobile or web app
+uses `tekartik_google_auth_flutter`.
 
 ## Getting started
 
@@ -23,22 +28,29 @@ The client id/secret are kept in RAM, nothing is read from a
 ```dart
 import 'package:tekartik_google_auth_io/google_auth_io.dart';
 
-var auth = tekartikGoogleAuthServiceIo.auth(
-  TekartikGoogleAuthOptionsIo(
-    clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com',
-    clientSecret: 'YOUR_CLIENT_SECRET',
-    projectId: 'your-project',
-    // Minimum scope needed to read the user info
-    scopes: [tekartikGoogleAuthUserInfoProfileScope],
-  ),
-);
+Future<void> main() async {
+  var auth = tekartikGoogleAuthServiceIo.auth(
+    TekartikGoogleAuthOptionsIo(
+      clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com',
+      clientSecret: 'YOUR_CLIENT_SECRET',
+      projectId: 'your-project',
+      // Minimum scope needed to read the user info
+      scopes: [tekartikGoogleAuthUserInfoProfileScope],
+    ),
+  );
+  try {
+    // The cached token if any, otherwise the consent in the browser.
+    var user = await auth.onCurrentUser.first ?? await auth.signIn();
+    print('signed in as ${user?.email}');
 
-auth.onCurrentUser.listen((user) => print('current user: $user'));
-
-await auth.signIn();
-
-// Authenticated client, ready for any googleapis api, owned by [auth]
-var client = await auth.getClient();
+    // Authenticated client, ready for any googleapis api, owned by [auth]
+    var client = await auth.getClient();
+    print(client != null);
+  } finally {
+    // Closes the client, otherwise the program does not exit.
+    await auth.close();
+  }
+}
 ```
 
 `tekartikGoogleAuthServiceIo.auth()` returns the same instance for equal
@@ -61,21 +73,24 @@ app should, so the url goes through `url_launcher`:
 
 ```dart
 import 'package:tekartik_app_url_launcher_flutter/web_launch_uri.dart';
+import 'package:tekartik_google_auth_io/google_auth_io.dart';
 
 Future<void> flutterPromptUserConsent(String url) async {
   print('  => $url');
   webLaunchUri(Uri.parse(url));
 }
 
-TekartikGoogleAuthOptionsIo(
-  ...,
+final options = TekartikGoogleAuthOptionsIo(
+  clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com',
+  clientSecret: 'YOUR_CLIENT_SECRET',
+  scopes: [tekartikGoogleAuthUserInfoProfileScope],
   promptUserConsent: flutterPromptUserConsent,
 );
 ```
 
-The bare `dart:io` default is a best effort `Process.start` of `xdg-open`
-(linux) / `open` (macOS) / `start` (windows); the url is always written too, so
-it can be copied if the launch fails.
+The bare `dart:io` default is a best effort launch of `xdg-open` (linux) /
+`open` (macOS) / `rundll32 url.dll,FileProtocolHandler` (windows); the url is
+always written too, so it can be copied if the launch fails.
 
 ## Saved credentials
 
@@ -98,11 +113,16 @@ implementations of
 [`tekartik_firebase_persistence`](https://github.com/tekartik/firebase.dart/tree/master/firebase_persistence):
 
 ```dart
-TekartikGoogleAuthOptionsIo(
-  ...,
+import 'package:tekartik_google_auth_io/google_auth_io.dart';
+
+final options = TekartikGoogleAuthOptionsIo(
+  clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com',
+  clientSecret: 'YOUR_CLIENT_SECRET',
+  scopes: [tekartikGoogleAuthUserInfoProfileScope],
   // Anywhere else on the file system
-  credentialsPersistence:
-      TekartikFirebasePersistenceFile(directoryPath: '.local/my_app'),
+  credentialsPersistence: TekartikFirebasePersistenceFile(
+    directoryPath: '.local/my_app',
+  ),
   // Or a database, or web local storage, or memory for a sign in that must
   // not survive the process:
   // credentialsPersistence:
@@ -121,6 +141,18 @@ The loopback flow binds a **random** local port
 **Desktop app** OAuth client. A *Web application* client rejects it with
 `redirect_uri_mismatch`.
 
+## Pitfalls
+
+* Sign in once at a time: a `getClient()` called while the restore started by
+  the first `onCurrentUser` listener runs builds a second client (one is never
+  closed). Await `onCurrentUser.first` (or `authReady`) before `getClient()`.
+* `auth.close()` at the end of the program: the open client keeps the
+  process alive.
+* Keep the client secret, the cached token file (`.local/`) and any service
+  account json out of the repository; the library never prints them.
+
 ## Example
 
-See [example/google_auth_io_example.dart](example/google_auth_io_example.dart).
+See [example/google_auth_io_example.dart](example/google_auth_io_example.dart)
+and the [tekartik-google-auth-io-setup skill](skills/tekartik-google-auth-io-setup/SKILL.md)
+(service account, several accounts, tests).

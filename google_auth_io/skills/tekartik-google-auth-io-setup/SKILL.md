@@ -56,7 +56,7 @@ flutter, no `client_secret.json` file: the client id/secret live in RAM.
   `promptUserConsent`, which defaults to
   `tekartikGoogleAuthIoPromptUserConsent`: it writes the url on stdout **and**
   launches the OS browser (`tekartikGoogleAuthIoLaunchUrl`, a detached
-  `xdg-open`/`open`/`cmd /c start`, best effort). Override
+  `xdg-open`/`open`/`rundll32 url.dll,FileProtocolHandler`, best effort). Override
   `promptUserConsent` (a `TekartikGoogleAuthPromptUserConsent`, i.e.
   `Future<void> Function(String url)`) for a gui: a flutter app should route
   the url through `tekartik_app_url_launcher_flutter`
@@ -89,7 +89,10 @@ flutter, no `client_secret.json` file: the client id/secret live in RAM.
   `AuthClient`, ready for a `googleapis` api object (`Oauth2Api`,
   `DriveApi`, ...). The auth owns it: `auth.close()` closes it, never close it
   yourself. `close()` at the end of the program, otherwise the process may
-  hang on the open client.
+  hang on the open client. There is no lock: two sign ins at the same time
+  (a `getClient()` while the restore of the first `onCurrentUser` listener
+  runs, two `getClient()` in a `Future.wait`) each build a client, one is
+  never closed. Await `onCurrentUser.first` (or `authReady`) first.
 * Service account (no consent, no cache, no browser):
   `tekartikGoogleAuthServiceIo.authViaServiceAccount(serviceAccountJson,
   scopes: [...], impersonatedUser: ...)` returns a
