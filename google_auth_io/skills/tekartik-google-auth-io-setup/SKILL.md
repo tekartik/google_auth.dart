@@ -76,8 +76,9 @@ flutter, no `client_secret.json` file: the client id/secret live in RAM.
     that must not survive the process (tests),
     `TekartikFirebasePersistenceSdb(sdbFactory:, dbName:)` for a database,
     `TekartikFirebasePersistenceWebLocalStorage()` on the web. A
-    `PrefsLight` from `tekartik_prefs` works too, the auth only uses the
-    `KvStore` surface (`getString`/`setString`/`remove`).
+    `PrefsLight` from `tekartik_prefs` works too as `prefs.kvStore`, the auth
+    only uses the `KvStore` surface (`getString`/`setString`, a null value
+    removing the key).
   * `auth.hasSavedCredentials` tells whether something is cached;
     `signInSilently()` returns `null` when nothing is. Credentials saved for
     other scopes, or without a refresh token, are ignored and a new consent is

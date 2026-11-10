@@ -107,7 +107,7 @@ and reused:
 
 By default they go to `.local/access_credentials.yaml`, relative to the current
 directory - the json content of `tekartik_io_auth_utils`, so an existing file is
-still read. Any `KvStore` works, including a `PrefsLight` from
+still read. Any `KvStore` works, including a prefs (`prefs.kvStore`) from
 [`tekartik_prefs`](https://github.com/tekartik/prefs.dart) and the
 implementations of
 [`tekartik_firebase_persistence`](https://github.com/tekartik/firebase.dart/tree/master/firebase_persistence):
