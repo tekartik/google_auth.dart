@@ -59,8 +59,10 @@ menu to drive a real sign in by hand.
 * **Nothing is interactive**: `signIn()` is never called, so no consent ui
   pops up and the suite is safe in ci. Test the real sign in by hand with the
   menu instead.
-* Writing a new implementation: make it pass `runGoogleAuthTests` first, that
-  is what the io and flutter implementations do. See the
+* Writing a new implementation: make it pass `runGoogleAuthTests` first. The
+  io implementation runs it (`test/google_auth_io_test.dart` of this
+  package, signed out, memory persistence); the flutter one does not (it
+  needs a device). See the
   `tekartik-google-auth-io-setup` and `tekartik-google-auth-flutter-setup`
   skills for the concrete options, and `tekartik_google_auth`'s
   implementation skill for the mixins.

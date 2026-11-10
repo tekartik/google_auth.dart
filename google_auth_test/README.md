@@ -59,9 +59,12 @@ dart run example/google_auth_io_menu_example.dart
 ## Tests
 
 `runGoogleAuthTests()` runs the common tests of an implementation - nothing is
-interactive, `signIn()` (which shows a consent ui) is never called:
+interactive, `signIn()` (which shows a consent ui) is never called. This is
+how this package runs them on `tekartik_google_auth_io`
+([test/google_auth_io_test.dart](test/google_auth_io_test.dart)):
 
 ```dart
+import 'package:tekartik_google_auth_io/google_auth_io.dart';
 import 'package:tekartik_google_auth_test/google_auth_test.dart';
 
 void main() {
@@ -79,4 +82,5 @@ void main() {
 ```
 
 `runGoogleAuthAuthTests()` does the same on an existing `TekartikGoogleAuth`,
-signed in or not.
+signed in or not. The Flutter implementation needs a device and does not run
+them yet.
